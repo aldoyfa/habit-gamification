@@ -7,6 +7,8 @@
 
 A RESTful API for habit tracking with gamification features, built with FastAPI and Domain-Driven Design principles.
 
+**DEMO & DOCS:** [http://103.59.160.152:15156](http://103.59.160.152:15156) 
+
 ## 📋 Table of Contents
 
 - [Features](#-features)
