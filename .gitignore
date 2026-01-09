@@ -23,6 +23,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.ruff_cache/
 
 # Virtual environments
 venv/
@@ -61,6 +62,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-# Test files (manual testing)
-test_auth.py

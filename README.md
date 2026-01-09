@@ -1,6 +1,5 @@
 # Habit Gamification API
 
-[![CI/CD Pipeline](https://github.com/nagikaz/habit-gamification/actions/workflows/ci.yml/badge.svg)](https://github.com/nagikaz/habit-gamification/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/nagikaz/habit-gamification/branch/main/graph/badge.svg)](https://codecov.io/gh/nagikaz/habit-gamification)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg)](https://fastapi.tiangolo.com)
@@ -432,8 +431,4 @@ habit-gamification/
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-Made with ❤️ using FastAPI and Domain-Driven Design
+This project is licensed under the MIT License.
