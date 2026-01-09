@@ -18,14 +18,12 @@ class StreakSchema(BaseModel):
 # Request Schemas
 class CreateHabitRequest(BaseModel):
     """Request body for creating a new habit"""
-    userId: UUID = Field(..., description="User ID who owns the habit")
     title: str = Field(..., description="Title of the habit")
     description: str = Field(..., description="Description of the habit")
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "userId": "550e8400-e29b-41d4-a716-446655440000",
                 "title": "Morning Exercise",
                 "description": "Do 30 minutes of exercise every morning"
             }
@@ -106,6 +104,37 @@ class ProgressResponse(BaseModel):
                 "streak": {
                     "count": 5
                 }
+            }
+        }
+    }
+
+
+# Authentication Schemas
+class LoginRequest(BaseModel):
+    """Request body for user login"""
+    username: str = Field(..., description="Username for authentication")
+    password: str = Field(..., description="Password for authentication")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "username": "john_doe",
+                "password": "secure_password123"
+            }
+        }
+    }
+
+
+class TokenResponse(BaseModel):
+    """Response containing JWT access token"""
+    accessToken: str = Field(..., description="JWT access token")
+    tokenType: str = Field(default="Bearer", description="Token type")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "tokenType": "Bearer"
             }
         }
     }

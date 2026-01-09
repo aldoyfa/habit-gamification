@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 from datetime import date, datetime
 from typing import List
+import bcrypt
 
 
 @dataclass
@@ -92,3 +93,30 @@ class Habit:
         self.progress.add_missed_entry()
         self.streak.reset()
         self.updated_at = datetime.now()
+
+
+@dataclass
+class User:
+    """User entity for authentication"""
+    user_id: UUID
+    username: str
+    hashed_password: str
+    created_at: datetime = field(default_factory=datetime.now)
+
+    @classmethod
+    def create(cls, username: str, password: str) -> "User":
+        """Factory method to create a new User"""
+        # Hash password with bcrypt
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        
+        return cls(
+            user_id=uuid4(),
+            username=username,
+            hashed_password=hashed_password,
+            created_at=datetime.now()
+        )
+
+    def verify_password(self, password: str) -> bool:
+        """Verify password against hashed password"""
+        return bcrypt.checkpw(password.encode('utf-8'), self.hashed_password.encode('utf-8'))

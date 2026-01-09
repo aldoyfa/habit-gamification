@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Dict, Optional
-from app.models import Habit
+from app.models import Habit, User
 
 
 class HabitRepository:
@@ -36,3 +36,36 @@ class HabitRepository:
 
 # Singleton instance for the repository
 habit_repository = HabitRepository()
+
+
+class UserRepository:
+    """In-memory repository for User entity"""
+
+    def __init__(self):
+        self._users: Dict[UUID, User] = {}
+        self._username_index: Dict[str, UUID] = {}
+
+    def save(self, user: User) -> User:
+        """Save a user to the repository"""
+        self._users[user.user_id] = user
+        self._username_index[user.username] = user.user_id
+        return user
+
+    def get_by_id(self, user_id: UUID) -> Optional[User]:
+        """Get a user by their ID"""
+        return self._users.get(user_id)
+
+    def get_by_username(self, username: str) -> Optional[User]:
+        """Get a user by their username"""
+        user_id = self._username_index.get(username)
+        if user_id:
+            return self._users.get(user_id)
+        return None
+
+    def exists(self, user_id: UUID) -> bool:
+        """Check if a user exists"""
+        return user_id in self._users
+
+
+# Singleton instance for the user repository
+user_repository = UserRepository()
