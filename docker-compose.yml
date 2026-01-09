@@ -1,0 +1,42 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: habit-gamification-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - ENV=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - habit-network
+
+  # Optional: Add test service for running tests in container
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: habit-gamification-test
+    command: ["pytest", "-v", "--cov=app", "--cov-report=term-missing", "--cov-fail-under=95"]
+    volumes:
+      - ./tests:/app/tests
+      - ./app:/app/app
+    environment:
+      - PYTHONPATH=/app
+      - ENV=test
+    profiles:
+      - test
+    networks:
+      - habit-network
+
+networks:
+  habit-network:
+    driver: bridge
