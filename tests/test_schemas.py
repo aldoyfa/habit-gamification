@@ -1,19 +1,21 @@
 """
 Unit tests for Pydantic schemas (request/response validation).
 """
-import pytest
-from uuid import uuid4
+
 from datetime import datetime
+from uuid import uuid4
+
+import pytest
 from pydantic import ValidationError
 
 from app.schemas import (
+    CreateHabitRequest,
+    HabitCompletionResponse,
+    HabitResponse,
+    LoginRequest,
+    ProgressResponse,
     ProgressSchema,
     StreakSchema,
-    CreateHabitRequest,
-    HabitResponse,
-    HabitCompletionResponse,
-    ProgressResponse,
-    LoginRequest,
     TokenResponse,
 )
 
@@ -30,36 +32,20 @@ class TestProgressSchema:
 
     def test_progress_schema_custom_values(self):
         """Test ProgressSchema with custom values."""
-        progress = ProgressSchema(
-            completedEntries=5,
-            totalEntries=10,
-            percentage=50
-        )
+        progress = ProgressSchema(completedEntries=5, totalEntries=10, percentage=50)
         assert progress.completedEntries == 5
         assert progress.totalEntries == 10
         assert progress.percentage == 50
 
     def test_progress_schema_serialization(self):
         """Test ProgressSchema serializes to dict correctly."""
-        progress = ProgressSchema(
-            completedEntries=3,
-            totalEntries=5,
-            percentage=60
-        )
+        progress = ProgressSchema(completedEntries=3, totalEntries=5, percentage=60)
         data = progress.model_dump()
-        assert data == {
-            "completedEntries": 3,
-            "totalEntries": 5,
-            "percentage": 60
-        }
+        assert data == {"completedEntries": 3, "totalEntries": 5, "percentage": 60}
 
     def test_progress_schema_from_dict(self):
         """Test ProgressSchema can be created from dict."""
-        data = {
-            "completedEntries": 7,
-            "totalEntries": 10,
-            "percentage": 70
-        }
+        data = {"completedEntries": 7, "totalEntries": 10, "percentage": 70}
         progress = ProgressSchema(**data)
         assert progress.completedEntries == 7
 
@@ -88,10 +74,7 @@ class TestCreateHabitRequest:
 
     def test_create_habit_request_valid(self):
         """Test valid CreateHabitRequest."""
-        request = CreateHabitRequest(
-            title="Morning Exercise",
-            description="30 minutes of exercise"
-        )
+        request = CreateHabitRequest(title="Morning Exercise", description="30 minutes of exercise")
         assert request.title == "Morning Exercise"
         assert request.description == "30 minutes of exercise"
 
@@ -125,7 +108,7 @@ class TestHabitResponse:
         habit_id = uuid4()
         user_id = uuid4()
         now = datetime.now()
-        
+
         response = HabitResponse(
             habitId=habit_id,
             userId=user_id,
@@ -134,9 +117,9 @@ class TestHabitResponse:
             progress=ProgressSchema(completedEntries=5, totalEntries=10, percentage=50),
             streak=StreakSchema(count=3),
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
-        
+
         assert response.habitId == habit_id
         assert response.userId == user_id
         assert response.title == "Test Habit"
@@ -148,7 +131,7 @@ class TestHabitResponse:
         with pytest.raises(ValidationError):
             HabitResponse(
                 habitId=uuid4(),
-                title="Test"
+                title="Test",
                 # Missing other required fields
             )
 
@@ -157,7 +140,7 @@ class TestHabitResponse:
         habit_id = uuid4()
         user_id = uuid4()
         now = datetime.now()
-        
+
         response = HabitResponse(
             habitId=habit_id,
             userId=user_id,
@@ -166,9 +149,9 @@ class TestHabitResponse:
             progress=ProgressSchema(),
             streak=StreakSchema(),
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
-        
+
         data = response.model_dump()
         assert data["habitId"] == habit_id
         assert data["userId"] == user_id
@@ -180,13 +163,13 @@ class TestHabitCompletionResponse:
     def test_habit_completion_response_valid(self):
         """Test valid HabitCompletionResponse."""
         habit_id = uuid4()
-        
+
         response = HabitCompletionResponse(
             habitId=habit_id,
             progress=ProgressSchema(completedEntries=10, totalEntries=12, percentage=83),
-            streak=StreakSchema(count=5)
+            streak=StreakSchema(count=5),
         )
-        
+
         assert response.habitId == habit_id
         assert response.progress.completedEntries == 10
         assert response.streak.count == 5
@@ -204,9 +187,9 @@ class TestProgressResponse:
         """Test valid ProgressResponse."""
         response = ProgressResponse(
             progress=ProgressSchema(completedEntries=8, totalEntries=10, percentage=80),
-            streak=StreakSchema(count=4)
+            streak=StreakSchema(count=4),
         )
-        
+
         assert response.progress.percentage == 80
         assert response.streak.count == 4
 
@@ -214,9 +197,9 @@ class TestProgressResponse:
         """Test ProgressResponse serializes correctly."""
         response = ProgressResponse(
             progress=ProgressSchema(completedEntries=5, totalEntries=5, percentage=100),
-            streak=StreakSchema(count=5)
+            streak=StreakSchema(count=5),
         )
-        
+
         data = response.model_dump()
         assert data["progress"]["percentage"] == 100
         assert data["streak"]["count"] == 5
@@ -259,10 +242,7 @@ class TestTokenResponse:
 
     def test_token_response_valid(self):
         """Test valid TokenResponse."""
-        response = TokenResponse(
-            accessToken="jwt.token.here",
-            tokenType="Bearer"
-        )
+        response = TokenResponse(accessToken="jwt.token.here", tokenType="Bearer")
         assert response.accessToken == "jwt.token.here"
         assert response.tokenType == "Bearer"
 

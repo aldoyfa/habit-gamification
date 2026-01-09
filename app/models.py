@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
 from datetime import date, datetime
-from typing import List
+from uuid import UUID, uuid4
+
 import bcrypt
 
 
 @dataclass
 class Progress:
     """Value object representing habit progress"""
+
     completed_entries: int = 0
     total_entries: int = 0
 
@@ -30,6 +31,7 @@ class Progress:
 @dataclass
 class Streak:
     """Value object representing habit streak"""
+
     count: int = 0
 
     def increment(self) -> None:
@@ -44,6 +46,7 @@ class Streak:
 @dataclass
 class HabitEntry:
     """Entity representing a single habit entry"""
+
     entry_id: UUID = field(default_factory=uuid4)
     date: date = field(default_factory=date.today)
     completed: bool = False
@@ -52,13 +55,14 @@ class HabitEntry:
 @dataclass
 class Habit:
     """Aggregate root for Habit domain"""
+
     habit_id: UUID
     user_id: UUID
     title: str
     description: str
     progress: Progress = field(default_factory=Progress)
     streak: Streak = field(default_factory=Streak)
-    entries: List[HabitEntry] = field(default_factory=list)
+    entries: list[HabitEntry] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
 
@@ -75,7 +79,7 @@ class Habit:
             streak=Streak(),
             entries=[],
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
 
     def complete(self) -> None:
@@ -98,6 +102,7 @@ class Habit:
 @dataclass
 class User:
     """User entity for authentication"""
+
     user_id: UUID
     username: str
     hashed_password: str
@@ -108,15 +113,15 @@ class User:
         """Factory method to create a new User"""
         # Hash password with bcrypt
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-        
+        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+
         return cls(
             user_id=uuid4(),
             username=username,
             hashed_password=hashed_password,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
     def verify_password(self, password: str) -> bool:
         """Verify password against hashed password"""
-        return bcrypt.checkpw(password.encode('utf-8'), self.hashed_password.encode('utf-8'))
+        return bcrypt.checkpw(password.encode("utf-8"), self.hashed_password.encode("utf-8"))

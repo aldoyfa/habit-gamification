@@ -1,11 +1,11 @@
 """
 Unit tests for domain models (Progress, Streak, HabitEntry, Habit, User).
 """
-import pytest
-from uuid import UUID, uuid4
-from datetime import date, datetime
 
-from app.models import Progress, Streak, HabitEntry, Habit, User
+from datetime import date, datetime
+from uuid import UUID, uuid4
+
+from app.models import Habit, HabitEntry, Progress, Streak, User
 
 
 class TestProgress:
@@ -167,12 +167,8 @@ class TestHabit:
     def test_habit_create_factory(self):
         """Test Habit.create factory method."""
         user_id = uuid4()
-        habit = Habit.create(
-            user_id=user_id,
-            title="Test Habit",
-            description="Test Description"
-        )
-        
+        habit = Habit.create(user_id=user_id, title="Test Habit", description="Test Description")
+
         assert isinstance(habit.habit_id, UUID)
         assert habit.user_id == user_id
         assert habit.title == "Test Habit"
@@ -194,9 +190,9 @@ class TestHabit:
         """Test completing a habit."""
         habit = Habit.create(uuid4(), "Test", "Test")
         original_updated_at = habit.updated_at
-        
+
         habit.complete()
-        
+
         assert len(habit.entries) == 1
         assert habit.entries[0].completed is True
         assert habit.progress.completed_entries == 1
@@ -207,11 +203,11 @@ class TestHabit:
     def test_habit_complete_multiple(self):
         """Test completing a habit multiple times."""
         habit = Habit.create(uuid4(), "Test", "Test")
-        
+
         habit.complete()
         habit.complete()
         habit.complete()
-        
+
         assert len(habit.entries) == 3
         assert habit.progress.completed_entries == 3
         assert habit.progress.total_entries == 3
@@ -221,9 +217,9 @@ class TestHabit:
         """Test missing a habit."""
         habit = Habit.create(uuid4(), "Test", "Test")
         original_updated_at = habit.updated_at
-        
+
         habit.miss()
-        
+
         assert len(habit.entries) == 1
         assert habit.entries[0].completed is False
         assert habit.progress.completed_entries == 0
@@ -234,24 +230,24 @@ class TestHabit:
     def test_habit_miss_resets_streak(self):
         """Test missing a habit resets the streak."""
         habit = Habit.create(uuid4(), "Test", "Test")
-        
+
         habit.complete()
         habit.complete()
         habit.complete()
         assert habit.streak.count == 3
-        
+
         habit.miss()
         assert habit.streak.count == 0
 
     def test_habit_complete_after_miss(self):
         """Test completing after a miss starts new streak."""
         habit = Habit.create(uuid4(), "Test", "Test")
-        
+
         habit.complete()
         habit.complete()
         habit.miss()
         habit.complete()
-        
+
         assert habit.streak.count == 1
         assert habit.progress.completed_entries == 3
         assert habit.progress.total_entries == 4
@@ -263,7 +259,7 @@ class TestUser:
     def test_user_create_factory(self):
         """Test User.create factory method."""
         user = User.create(username="testuser", password="testpass123")
-        
+
         assert isinstance(user.user_id, UUID)
         assert user.username == "testuser"
         assert user.hashed_password != "testpass123"  # Password should be hashed

@@ -1,14 +1,14 @@
 """
 Pytest configuration and fixtures for testing.
 """
+
 import pytest
 from fastapi.testclient import TestClient
-from uuid import uuid4
 
-from app.main import app
-from app.models import User, Habit
-from app.repository import habit_repository, user_repository, HabitRepository, UserRepository
 from app.auth import create_access_token
+from app.main import app
+from app.models import Habit, User
+from app.repository import HabitRepository, UserRepository, habit_repository, user_repository
 
 
 @pytest.fixture
@@ -76,9 +76,7 @@ def auth_headers2(auth_token2):
 def test_habit(test_user):
     """Create and return a test habit."""
     habit = Habit.create(
-        user_id=test_user.user_id,
-        title="Test Habit",
-        description="Test Description"
+        user_id=test_user.user_id, title="Test Habit", description="Test Description"
     )
     habit_repository.save(habit)
     return habit

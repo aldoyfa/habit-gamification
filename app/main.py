@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from app.routes import router
+
 from app.models import User
 from app.repository import user_repository
+from app.routes import router
 
 app = FastAPI(
     title="Habit Gamification API",

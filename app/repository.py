@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Dict, Optional
+
 from app.models import Habit, User
 
 
@@ -7,14 +7,14 @@ class HabitRepository:
     """In-memory repository for Habit aggregate"""
 
     def __init__(self):
-        self._habits: Dict[UUID, Habit] = {}
+        self._habits: dict[UUID, Habit] = {}
 
     def save(self, habit: Habit) -> Habit:
         """Save a habit to the repository"""
         self._habits[habit.habit_id] = habit
         return habit
 
-    def get_by_id(self, habit_id: UUID) -> Optional[Habit]:
+    def get_by_id(self, habit_id: UUID) -> Habit | None:
         """Get a habit by its ID"""
         return self._habits.get(habit_id)
 
@@ -42,8 +42,8 @@ class UserRepository:
     """In-memory repository for User entity"""
 
     def __init__(self):
-        self._users: Dict[UUID, User] = {}
-        self._username_index: Dict[str, UUID] = {}
+        self._users: dict[UUID, User] = {}
+        self._username_index: dict[str, UUID] = {}
 
     def save(self, user: User) -> User:
         """Save a user to the repository"""
@@ -51,11 +51,11 @@ class UserRepository:
         self._username_index[user.username] = user.user_id
         return user
 
-    def get_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_by_id(self, user_id: UUID) -> User | None:
         """Get a user by their ID"""
         return self._users.get(user_id)
 
-    def get_by_username(self, username: str) -> Optional[User]:
+    def get_by_username(self, username: str) -> User | None:
         """Get a user by their username"""
         user_id = self._username_index.get(username)
         if user_id:

@@ -1,20 +1,26 @@
-from fastapi import APIRouter, HTTPException, status, Depends
-from uuid import UUID
 from datetime import timedelta
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from app.auth import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+)
+from app.models import Habit, User
+from app.repository import habit_repository
 from app.schemas import (
     CreateHabitRequest,
-    HabitResponse,
     HabitCompletionResponse,
+    HabitResponse,
+    LoginRequest,
     ProgressResponse,
     ProgressSchema,
     StreakSchema,
-    LoginRequest,
     TokenResponse,
 )
-from app.models import Habit, User
-from app.repository import habit_repository, user_repository
-from app.auth import authenticate_user, create_access_token, get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(prefix="/api", tags=["API"])
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -74,7 +80,7 @@ def habit_to_progress_response(habit: Habit) -> ProgressResponse:
 def login(request: LoginRequest) -> TokenResponse:
     """
     Authenticate user and return JWT access token.
-    
+
     - **username**: Username for authentication
     - **password**: Password for authentication
     """
@@ -85,13 +91,12 @@ def login(request: LoginRequest) -> TokenResponse:
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.user_id)},
-        expires_delta=access_token_expires
+        data={"sub": str(user.user_id)}, expires_delta=access_token_expires
     )
-    
+
     return TokenResponse(accessToken=access_token, tokenType="Bearer")
 
 
@@ -103,14 +108,16 @@ def login(request: LoginRequest) -> TokenResponse:
     summary="Create a new habit",
     description="Membuat objek Habit baru sebagai aggregate root dan menginisialisasi komponen internalnya.",
 )
-def create_habit(request: CreateHabitRequest, current_user: User = Depends(get_current_user)) -> HabitResponse:
+def create_habit(
+    request: CreateHabitRequest, current_user: User = Depends(get_current_user)
+) -> HabitResponse:
     """
     Create a new habit with the given details.
-    
+
     - **userId**: UUID of the user who owns the habit
     - **title**: Title of the habit
     - **description**: Description of the habit
-    
+
     Requires: Valid JWT token in Authorization header
     """
     # Use authenticated user's ID instead of request userId
@@ -132,9 +139,9 @@ def create_habit(request: CreateHabitRequest, current_user: User = Depends(get_c
 def get_habit(habitId: UUID, current_user: User = Depends(get_current_user)) -> HabitResponse:
     """
     Get the current state of a habit including progress and streak.
-    
+
     - **habitId**: UUID of the habit to retrieve
-    
+
     Requires: Valid JWT token in Authorization header
     """
     habit = habit_repository.get_by_id(habitId)
@@ -143,14 +150,14 @@ def get_habit(habitId: UUID, current_user: User = Depends(get_current_user)) -> 
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Habit with id {habitId} not found",
         )
-    
+
     # Ensure user can only access their own habits
     if habit.user_id != current_user.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this habit",
         )
-    
+
     return habit_to_response(habit)
 
 
@@ -160,12 +167,14 @@ def get_habit(habitId: UUID, current_user: User = Depends(get_current_user)) -> 
     summary="Complete habit for today",
     description="Mencatat penyelesaian habit pada hari berjalan dengan menambahkan HabitEntry dan memperbarui Progress serta Streak.",
 )
-def complete_habit(habitId: UUID, current_user: User = Depends(get_current_user)) -> HabitCompletionResponse:
+def complete_habit(
+    habitId: UUID, current_user: User = Depends(get_current_user)
+) -> HabitCompletionResponse:
     """
     Record habit completion for the current day.
-    
+
     - **habitId**: UUID of the habit to mark as completed
-    
+
     Requires: Valid JWT token in Authorization header
     """
     habit = habit_repository.get_by_id(habitId)
@@ -174,14 +183,14 @@ def complete_habit(habitId: UUID, current_user: User = Depends(get_current_user)
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Habit with id {habitId} not found",
         )
-    
+
     # Ensure user can only complete their own habits
     if habit.user_id != current_user.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to modify this habit",
         )
-    
+
     habit.complete()
     habit_repository.save(habit)
     return habit_to_completion_response(habit)
@@ -193,12 +202,14 @@ def complete_habit(habitId: UUID, current_user: User = Depends(get_current_user)
     summary="Miss habit for today",
     description="Mencatat kegagalan penyelesaian habit pada hari berjalan dan memperbarui nilai streak sesuai aturan domain.",
 )
-def miss_habit(habitId: UUID, current_user: User = Depends(get_current_user)) -> HabitCompletionResponse:
+def miss_habit(
+    habitId: UUID, current_user: User = Depends(get_current_user)
+) -> HabitCompletionResponse:
     """
     Record habit miss for the current day.
-    
+
     - **habitId**: UUID of the habit to mark as missed
-    
+
     Requires: Valid JWT token in Authorization header
     """
     habit = habit_repository.get_by_id(habitId)
@@ -207,14 +218,14 @@ def miss_habit(habitId: UUID, current_user: User = Depends(get_current_user)) ->
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Habit with id {habitId} not found",
         )
-    
+
     # Ensure user can only modify their own habits
     if habit.user_id != current_user.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to modify this habit",
         )
-    
+
     habit.miss()
     habit_repository.save(habit)
     return habit_to_completion_response(habit)
@@ -226,12 +237,14 @@ def miss_habit(habitId: UUID, current_user: User = Depends(get_current_user)) ->
     summary="Get habit progress",
     description="Mengambil ringkasan value object Progress dan Streak tanpa memuat detail atribut lain dari Habit.",
 )
-def get_habit_progress(habitId: UUID, current_user: User = Depends(get_current_user)) -> ProgressResponse:
+def get_habit_progress(
+    habitId: UUID, current_user: User = Depends(get_current_user)
+) -> ProgressResponse:
     """
     Get progress and streak summary for a habit.
-    
+
     - **habitId**: UUID of the habit to get progress for
-    
+
     Requires: Valid JWT token in Authorization header
     """
     habit = habit_repository.get_by_id(habitId)
@@ -240,14 +253,14 @@ def get_habit_progress(habitId: UUID, current_user: User = Depends(get_current_u
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Habit with id {habitId} not found",
         )
-    
+
     # Ensure user can only access their own habits
     if habit.user_id != current_user.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this habit",
         )
-    
+
     return habit_to_progress_response(habit)
 
 
