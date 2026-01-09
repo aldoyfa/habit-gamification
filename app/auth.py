@@ -9,7 +9,7 @@ from app.models import User
 from app.repository import user_repository
 
 # JWT Configuration
-SECRET_KEY = "your-secret-key-change-this-in-production"  # TODO: Move to environment variable
+SECRET_KEY = "your-secret-key-change-this-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
